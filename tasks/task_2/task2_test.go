@@ -65,3 +65,16 @@ func TestUnpackageIncorrectStr(t *testing.T) {
 		t.Errorf("unpackage error mismatch, got: %s, want: %s", err.Error(), expectedError)
 	}
 }
+
+func TestUnpackageManyNums(t *testing.T) {
+	expected := "aaaaaaaaaabbbbbbbbbbb"
+
+	res, err := unpackage("a10b11")
+	if err != nil {
+		t.Errorf("unpackage finished with error: %s", err)
+	}
+
+	if res != expected {
+		t.Errorf("unpackage failed: got %s, expected %s", res, expected)
+	}
+}

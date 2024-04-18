@@ -12,8 +12,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"time"
-
+	
 	"github.com/beevik/ntp"
 )
 
@@ -29,5 +28,4 @@ func printTime() {
 
 func main() {
 	printTime()
-	fmt.Println(time.Now())
 }

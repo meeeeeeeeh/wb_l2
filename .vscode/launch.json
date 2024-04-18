@@ -10,7 +10,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "tasks/task_2/main.go"
+            "program": "tasks/task_3/main.go"
         }
     ]
 }
