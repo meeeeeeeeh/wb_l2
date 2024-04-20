@@ -202,7 +202,6 @@ func sortFile() error {
 
 
 
-
 func main() {
 
 	err := sortFile()
