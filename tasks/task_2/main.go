@@ -25,7 +25,6 @@ package main
 
 import (
 	"errors"
-	//"fmt"
 	"strconv"
 )
 
@@ -59,9 +58,6 @@ func unpackage(str string) (string, error) {
 	}
 
 	for idx := 0; idx < len(str); idx++ {
-		// if str[idx] == '/' {
-			
-		// }
 		if idx+1 != len(str) && !isNum(rune(str[idx])) && isNum(rune(str[idx+1])) {
 			// запись количества повторов в отдельную строку
 			num := ""
@@ -84,15 +80,3 @@ func unpackage(str string) (string, error) {
 
 	return res, nil
 }
-
-// func main() {
-// 	str := "a10b2"
-
-// 	res, err := Unpackage(str)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-
-
-// 	fmt.Println(res)
-// }

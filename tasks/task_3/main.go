@@ -28,7 +28,15 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strconv"
+	"strings"
 )
+
+type fileData struct {
+	fileName string
+	flag string
+	kVal int
+}
 
 //заносит каждую строчку файла в слайс
 func parseFile(filename string) ([]string, error) {
@@ -46,13 +54,11 @@ func parseFile(filename string) ([]string, error) {
 		if err != nil && err != io.EOF{
 			return nil, err
 		}
-		
 		if err == io.EOF {
 			line += "\n"
 			fileData = append(fileData, line)
 			break
 		}
-
 		fileData = append(fileData, line)
 	}
 
@@ -90,41 +96,116 @@ func printData(fileData []string, flag string) {
 	}
 }
 
-// поддержка обработки только одного файла и одного флага/без флага одновременно
-func sortFile(args []string) error {
-	if len(args) < 2 || len(args) > 3 {
+
+func sortAsNums(data []string) {
+	sort.Slice(data, func(i, j int) bool {
+		//убираем все пробелы и перенос строки
+		//иначе atoi выдает ошибку
+		iTrim := strings.Replace(data[i], " ", "", -1)
+		iTrim = strings.Replace(iTrim, "\n", "", -1)
+		iConv, iErr := strconv.Atoi(iTrim)
+
+		jTrim := strings.Replace(data[j], " ", "", -1)
+		jTrim = strings.Replace(jTrim, "\n", "", -1)
+		jConv, jErr := strconv.Atoi(jTrim)
+
+		// если встречаются строки с буквами, они будут сортироваться как строки
+		// в ином случае сортировка по числам
+		if iErr != nil || jErr != nil {
+			return data[i] < data[j]
+		}
+
+		return iConv < jConv
+	})
+}
+
+// флаг к сортируется по определенному столбцу который указывается индексом строки
+// столбец для флага к должен идти через пробел!
+func sortByKey(data []string, index int) {
+	sort.Slice(data, func(i, j int) bool {
+		str1 := strings.Split(data[i], " ")
+		str2 := strings.Split(data[j], " ")
+		
+		//если перестановку делать не нужно функции возвращается false
+		if index > len(str1) || index > len(str2) {
+			return false
+		}
+
+		keyWord1 := str1[index-1] 
+		keyWord2 := str2[index-1]
+
+		return keyWord1 < keyWord2
+	})
+}
+
+func newFile(args []string) (*fileData, error) {
+	var data fileData
+	if len(args) < 2 || len(args) > 4 || (len(args) == 4 && args[1] != "-k") {
 		err := errors.New("Invalid input")
-		return err
+		return nil, err
 	}
 
-	fileName := args[1]
-	flag := ""
-	if len(args) == 3  {
-		flag = args[2]
+	if len(args) == 4  {
+		data.flag = args[1]
+
+		idx, err := strconv.Atoi(args[2])
+		if err != nil {
+			err := errors.New("Invalid input")
+			return nil, err
+		}
+
+		data.kVal = idx
+		data.fileName = args[3]
+
+	} else if len(args) == 3 {
+		data.flag = args[1]
+		data.fileName = args[2]
+
+	} else {
+		data.fileName = args[1]
+	}
+
+	return &data, nil
+}
+
+// поддержка обработки только одного файла и одного флага/без флага одновременно
+func sortFile() error {
+	f, err := newFile(os.Args)
+	if err != nil {
+		return err
 	}
 	
-	
-	fileData, err := parseFile(fileName)
+	fileData, err := parseFile(f.fileName)
 	if err != nil {
 		return err
 	}
 
-	if flag == "-u" {
+	if f.flag == "-u" {
 		fileData = unique(fileData)
 	}
 
-	sort.Strings(fileData)
+	if f.flag == "-n" {
+		sortAsNums(fileData)
 
-	printData(fileData, flag)
+	} else if f.flag == "-k" {
+		sortByKey(fileData, f.kVal)
+		
+	} else {
+		sort.Strings(fileData)
+	}
+
+	printData(fileData, f.flag)
 
 	return nil
 }
 
 
 
+
+
 func main() {
 
-	err := sortFile(os.Args)
+	err := sortFile()
 	if err != nil {
 		fmt.Println(err)
 	}
