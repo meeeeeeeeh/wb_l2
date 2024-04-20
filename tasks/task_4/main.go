@@ -84,7 +84,7 @@ func getAnagrams(str string) map[string][]string {
 	for _, val := range data {
 		added := false
 
-		for key, _ := range res {
+		for key := range res {
 			if isExist(res[key], val) {
 				added = true
 				break
