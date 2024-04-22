@@ -36,14 +36,14 @@ func newRequest(args []string) (*data, error) {
 	var d data
 
 	if len(args) < 2 || len(args) > 5 {
-		err := errors.New("Invalid input")
+		err := errors.New("invalid input")
 		return nil, err
 	}
 
 	if len(args) == 5 && (args[1] == "-A" || args[1] == "-B" || args[1] == "-C") {
 		amount, err := strconv.Atoi(args[2])
 		if err != nil {
-			err := errors.New("Invalid input")
+			err := errors.New("invalid input")
 			return nil, err
 		}
 
@@ -138,7 +138,7 @@ func printLines(d data) {
 	if d.flag == "-A" || d.flag == "-B" || d.flag == "-C" {
 		findMatches(&d)
 		for _, line := range d.fileByLines {
-			fmt.Printf(line)
+			fmt.Print(line)
 		}
 	} else {
 		count := 0
@@ -163,14 +163,14 @@ func printLines(d data) {
 				if d.flag == "-n" {
 					fmt.Println(i + 1)
 				} else if d.flag != "-c" {
-					fmt.Printf(line)
+					fmt.Print(line)
 				}
 
 				count++
 			}
 
 			if d.flag == "-v" && !match {
-				fmt.Printf(line)
+				fmt.Print(line)
 			}
 
 		}
@@ -189,6 +189,9 @@ func grep() {
 	}
 
 	err = parseFile(d)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	printLines(*d)
 

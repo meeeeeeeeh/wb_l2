@@ -1,3 +1,0 @@
-first 5 2
-second 4 1
-third 3 3

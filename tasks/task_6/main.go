@@ -20,74 +20,104 @@ import (
 	"strings"
 )
 
-// поддержка только одного шаблона, одного файла, одного флага одновременно
+// поддержка только одного файла и сепаратора одновременно
+// все флаги и значения пишется через пробел
+// номера колонок которые нужно вывести пишутся вместе через запятую
 type data struct {
 	fileName string
-	flag     string
+	f        bool
+	d        bool
+	s        bool
 	sep      string
-	field    int
-
-	//fileByLines []string
+	fields   []int
 }
+
+const (
+	defaultField = 1
+	defaultSep   = "\t"
+)
 
 func newRequest(args []string) (*data, error) {
 	var d data
 
-	if len(args) < 2 || len(args) > 5 {
-		err := errors.New("Invalid input")
-		return nil, err
+	for i := range args {
+		if args[i][0] == '-' {
+			if args[i][1] == 'f' {
+				d.f = true
+				fields := strings.Split(args[i+1], ",")
+				for _, val := range fields {
+					field, err := strconv.Atoi(string(val))
+					if err != nil {
+						return nil, err
+					}
+					d.fields = append(d.fields, field)
+				}
+				i++
+			} else if args[i][1] == 'd' {
+				d.d = true
+				d.sep = args[i+1]
+				i++
+			} else if args[i][1] == 's' {
+				d.s = true
+			}
+		} else if strings.Contains(args[i], ".txt") {
+			d.fileName = args[i]
+		}
 	}
 
-	if len(args) == 5 && (args[1] == "-A" || args[1] == "-B" || args[1] == "-C") {
-		amount, err := strconv.Atoi(args[2])
-		if err != nil {
-			err := errors.New("Invalid input")
-			return nil, err
-		}
-
-		d.lineAmount = amount
-		d.template = args[3]
-		d.flag = args[1]
-		d.fileName = args[4]
-
-	} else if len(args) == 4 {
-		d.template = args[2]
-		d.flag = args[1]
-		d.fileName = args[3]
-
-	} else if len(args) == 3 {
-		d.template = args[1]
-		d.fileName = args[2]
+	if !d.f {
+		d.fields = append(d.fields, defaultField)
+	}
+	if !d.d {
+		d.sep = defaultSep
+	}
+	if d.fileName == "" {
+		err := errors.New("no file was inputted")
+		return nil, err
 	}
 
 	return &d, nil
 }
 
-// заносит каждую строчку файла в слайс
-func parseFile(filename string) ([]string, error) {
-	f, err := os.Open(filename)
+func parseFile(d data) error {
+	f, err := os.Open(d.fileName)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer f.Close()
 
 	reader := bufio.NewReader(f)
-	var fileData []string
-
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil && err != io.EOF {
-			return nil, err
+			return err
 		}
+
+		if strings.Contains(line, d.sep) {
+			output := strings.Split(line, d.sep)
+
+			for idx, val := range d.fields {
+				if val > len(output) {
+					continue
+				}
+				if idx != len(d.fields) && idx > 0 {
+					fmt.Print(d.sep)
+				}
+				fmt.Print(output[val-1])
+
+			}
+		} else if !d.s {
+			fmt.Print(line)
+		}
+
 		if err == io.EOF {
-			line += "\n"
-			fileData = append(fileData, line)
+			fmt.Print("\n")
 			break
 		}
-		fileData = append(fileData, line)
+
 	}
 
-	return fileData, nil
+	return nil
 }
 
 func cut() {
@@ -96,12 +126,13 @@ func cut() {
 		log.Fatalln(err)
 	}
 
-	err = parseFile(d)
+	err = parseFile(*d)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 }
 
 func main() {
-
 	cut()
-
 }

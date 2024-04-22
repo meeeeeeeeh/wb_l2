@@ -10,8 +10,8 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "tasks/task_5/main.go",
-            "args": ["-F", "a", "files/test_file4.txt"]
+            "program": "tasks/task_6/main.go",
+            "args": ["-d ", ",","-f", "1,9,3", "-s", "files/test_file1.txt"]
         }
     ]
 }
