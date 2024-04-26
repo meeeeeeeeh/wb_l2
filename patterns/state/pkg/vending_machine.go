@@ -36,6 +36,7 @@ func NewVendingMachine(itemCount, itemPrice int) *VendingMachine {
 	return v
 }
 
+//вызывается метод в зависимости от состояния
 func (v *VendingMachine) RequestItem() error {
 	return v.currentState.RequestItem()
 }
