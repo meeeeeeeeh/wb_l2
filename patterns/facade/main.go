@@ -53,6 +53,7 @@ var (
 	}
 )
 
+//функция sell - фасад над бизнес логикой поведения по безналичному рассчету
 func main() {
 	fmt.Println("[Банк] Выпуск карты")
 	bank.Cards = append(bank.Cards, card1, card2)
