@@ -25,12 +25,9 @@ func TestWget(t *testing.T) {
 
 	//вызываем оригинальную  утилиту
 	cmd := exec.Command("wget", url)
-	// //Устанавливаем директорию, в которой будет выполняться команда
-	// cmd.Dir = "test_file_directory"
 	_, err = cmd.CombinedOutput()
 	if err != nil {
 		log.Fatalln("test error: original wget utility failed")
-		t.Error()
 	}
 
 	//переходим на директорию выше
@@ -41,31 +38,39 @@ func TestWget(t *testing.T) {
 
 	//создаем директорию где будет лежать файл созданный нашей программой
 	cmdDir = exec.Command("mkdir", "test_file_directory")
-	//Устанавливаем директорию, в которой будет выполняться команда
-	//тк mkdir и chdir выполняются в изолированных процессах и без установки директории
-	//chdir не увидит созданную директорию
 	err = cmdDir.Run()
 	if err != nil {
 		log.Fatalln("test error: creating directory 'test_file_directory' failed")
 	}
 
-	// //переходим в директорию
-	// err = os.Chdir("test_file_directory")
-	// if err != nil {
-	// 	log.Fatalln("test error: changing directory failed")
-	// }
-
 	//вызываем нашу программу
-	cmd = exec.Command("./wget_impl", url)
+	cmd = exec.Command("../wget_impl", url)
 	//Устанавливаем директорию, в которой будет выполняться команда
 	cmd.Dir = "test_file_directory"
 	_, err = cmd.CombinedOutput()
 	if err != nil {
 		log.Fatalln("test error: test wget utility failed")
+	}
+
+	//вызываем команду чтобы сравнить два файла
+	cmd = exec.Command("diff", "test_file_directory/Facade_pattern", "origin_file_directory/Facade_pattern")
+	res, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Fatalln("test error: diff command failed")
+	}
+
+	//если diff нашел отличие в файлах то программа сработала неправильно
+	if len(res) != 0 {
 		t.Error()
 	}
 
-	// //удаляем созданные директории
-	// err = os.RemoveAll("test_file_directory")
-	// err = os.RemoveAll("origin_file_directory")
+	//удаляем созданные директории
+	err = os.RemoveAll("test_file_directory")
+	if err != nil {
+		log.Fatalln("test error: remove test_file_directory failed")
+	}
+	err = os.RemoveAll("origin_file_directory")
+	if err != nil {
+		log.Fatalln("test error: remove origin_file_directory failed")
+	}
 }

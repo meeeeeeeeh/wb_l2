@@ -10,53 +10,38 @@ package main
 
 import (
 	"fmt"
-	"sync"
 	"time"
 )
 
 func or(channels ...<-chan interface{}) <-chan interface{} {
-	c := make(chan interface{})
-	var wg sync.WaitGroup
+	res := make(chan interface{})
 	for _, val := range channels {
-		wg.Add(1)
 		go func(ch <-chan interface{}) {
-			defer wg.Done()
 			<-ch
-			close(c)
-
+			close(res)
 		}(val)
 	}
-
-	wg.Wait()
-	return c
+	return res
 }
 
-func sig(after time.Duration) chan interface{} {
-	c := make(chan interface{})
+func sig(after time.Duration) <-chan interface{} {
+	c := make(chan interface{}) // кладет nil
 	go func() {
 		defer close(c)
 		time.Sleep(after)
-
 	}()
 	return c
 }
 
 func main() {
-	ch1 := sig(1 * time.Second)
-	ch1 <- 1
-	ch2 := sig(1 * time.Second)
-	ch2 <- 2
 	start := time.Now()
-
-	<-or(ch1, ch2)
-
-	// <-or(
-	// 	sig(1*time.Second),
-	// 	sig(2*time.Second),
-	// 	sig(3*time.Second),
-	// 	sig(4*time.Second),
-	// 	sig(5*time.Second),
-	// )
+	<-or(
+		sig(1*time.Microsecond),
+		sig(2*time.Second),
+		sig(3*time.Second),
+		sig(4*time.Second),
+	)
 
 	fmt.Printf("done after %v", time.Since(start))
+
 }
