@@ -36,6 +36,27 @@ Web-сервер должен запускаться на порту указа�
 
 package main
 
+import (
+	"fmt"
+	"net/http"
+)
+
+func CreateEventHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func Home(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "home page")
+}
+
 func main() {
+	http.HandleFunc("/", Home)
+	http.HandleFunc("/create_event", CreateEventHandler)
+
+	err := http.ListenAndServe("localhost:1234", nil)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 }
