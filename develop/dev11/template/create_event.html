@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="text/html; charset=utf-8">
+    <title>Calendar</title>
+  </head>
+  
+  <body>
+
+    <h1>Create an event</h1>
+
+    <form method ="post" action="/create_event">
+      
+      <h3>Your name: <input type="text" id="user_name" name="user_name" required></h3>
+      <h3>Event: <input type="text" id="event_name" name="event_name" required></h3>
+      <h3>Date: <input type="datetime-local" id="date" name="date" required></h3>
+      <!-- <h3>Date: <input type="time" id="time" name="time" min="2000-01-02" required></h3> -->
+      <button type="submit">Create event</button>
+
+    </form>
+
+
+  </body>
+</html> 

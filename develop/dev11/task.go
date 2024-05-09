@@ -39,21 +39,18 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"task_11/config"
 )
 
-func CreateEventHandler(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func Home(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "home page")
-}
-
 func main() {
-	http.HandleFunc("/", Home)
-	http.HandleFunc("/create_event", CreateEventHandler)
 
-	err := http.ListenAndServe("localhost:1234", nil)
+	calendar := newCalendar()
+
+	http.HandleFunc("/", home)
+	http.HandleFunc("/create_event", calendar.createEventHandler)
+	http.HandleFunc("/delete_event", calendar.deleteEventHandler)
+
+	err := http.ListenAndServe(config.Addres, nil)
 	if err != nil {
 		fmt.Println(err)
 		return
