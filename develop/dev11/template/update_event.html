@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="text/html; charset=utf-8">
+    <title>Calendar</title>
+  </head>
+  
+  <body>
+
+    <h1>Update an event</h1>
+
+    <form method ="post" action="/update_event">
+      
+      <h3>Your name: <input type="text" id="user_name" name="user_name" required></h3>
+      <h3>Event to update: <input type="text" id="event_name" name="event_name" required></h3>
+      <h3>Change date: <input type="datetime-local" id="date" name="date" required></h3>
+      <button type="submit">Update event</button>
+
+    </form>
+
+
+  </body>
+</html> 

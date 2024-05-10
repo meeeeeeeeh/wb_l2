@@ -1,9 +1,9 @@
-package main
+// package main
 
-import "time"
+// import "time"
 
-type event struct {
-	//userName  string    `json:"user_name"`
-	eventName string
-	date      time.Time
-}
+// type event struct {
+// 	//userName  string    `json:"user_name"`
+// 	eventName string
+// 	date      time.Time
+// }

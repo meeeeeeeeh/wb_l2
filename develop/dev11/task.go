@@ -40,15 +40,20 @@ import (
 	"fmt"
 	"net/http"
 	"task_11/config"
+	h "task_11/handlers"
 )
 
 func main() {
 
-	calendar := newCalendar()
+	calendar := h.NewCalendar()
 
-	http.HandleFunc("/", home)
-	http.HandleFunc("/create_event", calendar.createEventHandler)
-	http.HandleFunc("/delete_event", calendar.deleteEventHandler)
+	http.HandleFunc("/create_event", calendar.CreateEventHandler)
+	http.HandleFunc("/delete_event", calendar.DeleteEventHandler)
+	http.HandleFunc("/update_event", calendar.UpdateEventHandler)
+
+	http.HandleFunc("/events_for_day", calendar.UpdateEventHandler)
+	http.HandleFunc("/events_for_week", calendar.UpdateEventHandler)
+	http.HandleFunc("/events_for_month", calendar.UpdateEventHandler)
 
 	err := http.ListenAndServe(config.Addres, nil)
 	if err != nil {
