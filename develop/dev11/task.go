@@ -47,13 +47,14 @@ func main() {
 
 	calendar := h.NewCalendar()
 
-	http.HandleFunc("/create_event", calendar.CreateEventHandler)
-	http.HandleFunc("/delete_event", calendar.DeleteEventHandler)
-	http.HandleFunc("/update_event", calendar.UpdateEventHandler)
+	http.HandleFunc("/create_event", h.MiddlewareLogger(calendar.CreateEventHandler))
+	http.HandleFunc("/delete_event", h.MiddlewareLogger(calendar.DeleteEventHandler))
+	http.HandleFunc("/update_event", h.MiddlewareLogger(calendar.UpdateEventHandler))
 
-	http.HandleFunc("/events_for_day", calendar.UpdateEventHandler)
-	http.HandleFunc("/events_for_week", calendar.UpdateEventHandler)
-	http.HandleFunc("/events_for_month", calendar.UpdateEventHandler)
+	//in process
+	http.HandleFunc("/events_for_day", h.MiddlewareLogger(calendar.UpdateEventHandler))
+	http.HandleFunc("/events_for_week", h.MiddlewareLogger(calendar.UpdateEventHandler))
+	http.HandleFunc("/events_for_month", h.MiddlewareLogger(calendar.UpdateEventHandler))
 
 	err := http.ListenAndServe(config.Addres, nil)
 	if err != nil {

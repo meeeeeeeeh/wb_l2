@@ -18,9 +18,15 @@ type event struct {
 }
 
 type calendar struct {
-	mu     sync.Mutex
-	events map[string][]event //все события, ключ - имя пользователя
+	mu         sync.Mutex
+	events     map[string][]event //все события, ключ - имя пользователя
+	status     string
+	statusCode int
 }
+
+// type respondResult struct {
+// 	result string
+// }
 
 func (c *calendar) deleteEvent(user, event string) error {
 	c.mu.Lock()
@@ -136,19 +142,75 @@ func NewCalendar() *calendar {
 	}
 }
 
+func (c *calendar) requestCheck(w http.ResponseWriter, r *http.Request, invalidInptError error) {
+
+	if invalidInptError != nil {
+		c.status = invalidInptError.Error() // invalid input
+		c.statusCode = 400
+		jsonPostRespond(c.status, c.statusCode, w)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		c.status = "internal server error" // invalid input
+		c.statusCode = 503
+		jsonPostRespond(c.status, c.statusCode, w)
+		return
+	}
+
+	err := r.ParseForm() //можно оставить для обработки ошибки 500
+	if err != nil {
+		c.status = err.Error() // invalid input
+		c.statusCode = 503
+		jsonPostRespond(c.status, c.statusCode, w)
+		return
+	}
+
+	c.status = "OK"
+	c.statusCode = 200
+	jsonPostRespond(c.status, c.statusCode, w)
+
+	//fmt.Println("response", r.Response)
+
+	//fmt.Println(c.events)
+}
+
 func (c *calendar) CreateEventHandler(w http.ResponseWriter, r *http.Request) {
 	f, _ := os.Open("template/create_event.html")
 	b, _ := io.ReadAll(f)
 	w.Write(b)
 
-	if r.Method == http.MethodPost {
+	// if r.Method != http.MethodPost {
+	// 	c.status = "internal server error" // invalid input
+	// 	c.statusCode = 503
+	// 	jsonPostRespond(c.status, c.statusCode, w)
+	// 	return
+	// }
 
-		err := c.addEvent(r.FormValue("date"), r.FormValue("user_name"), r.FormValue("event_name"))
-		if err != nil {
-			log.Fatalln(err)
-		}
+	// err := r.ParseForm() //можно оставить для обработки ошибки 500
+	// if err != nil {
+	// 	c.status = err.Error() // invalid input
+	// 	c.statusCode = 503
+	// 	jsonPostRespond(c.status, c.statusCode, w)
+	// 	return
+	// }
 
-	}
+	// err = c.addEvent(r.FormValue("date"), r.FormValue("user_name"), r.FormValue("event_name"))
+	// if err != nil {
+	// 	c.status = err.Error() // invalid input
+	// 	c.statusCode = 400
+	// 	jsonPostRespond(c.status, c.statusCode, w)
+	// 	return
+	// }
+	// c.status = "OK"
+	// c.statusCode = 200
+	// jsonPostRespond(c.status, c.statusCode, w)
+	// fmt.Println("response", r.Response)
+
+	//можно вызвать в addEvent проверки
+	// или сделать проверки на ошибки сервера в отдельной функции а на пользовательские отдельно
+	c.requestCheck(w, r, c.addEvent(r.FormValue("date"), r.FormValue("user_name"), r.FormValue("event_name")))
+
 	fmt.Println(c.events)
 
 }
@@ -168,6 +230,7 @@ func (c *calendar) DeleteEventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println(c.events)
+
 }
 
 func (c *calendar) UpdateEventHandler(w http.ResponseWriter, r *http.Request) {
@@ -186,9 +249,44 @@ func (c *calendar) UpdateEventHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(c.events)
 }
 
+func jsonPostRespond(status string, statusCode int, w http.ResponseWriter) {
+	w.Header().Add("Content-Type", "application/json")
+
+	var response string
+
+	if statusCode == 200 {
+		w.WriteHeader(http.StatusOK)
+		response = fmt.Sprintf(`"result": %s`, status)
+	} else if statusCode == 400 {
+		w.WriteHeader(http.StatusBadRequest)
+		response = fmt.Sprintf(`"error": %s`, status)
+	} else if statusCode == 500 {
+		w.WriteHeader(http.StatusInternalServerError)
+		response = fmt.Sprintf(`"error": %s`, status)
+	} else if statusCode == 503 {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		response = fmt.Sprintf(`"error": %s`, status)
+	}
+
+	_, err := w.Write([]byte(response)) // записывает в боди
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+}
+
 func MiddlewareLogger(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Println("method: ", r.Method, "path: ", r.URL.EscapedPath())
+		log.Println("method: ", r.Method)
+		log.Println("path: ", r.URL.EscapedPath())
+		start := time.Now()
+		next(w, r)
+		log.Println("time exrcution: ", time.Since(start))
+		//todo вывести статус выполнения (?)
+		//fmt.Println(r.Response.StatusCode)
 
+		//вывод статуса ошибки
+		// resp, err := http.PostForm("http://localhost:1234/create_event", nil)
+		// fmt.Println(resp.Status)
 	}
 }
