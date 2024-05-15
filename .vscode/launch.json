@@ -10,7 +10,9 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "patterns/chain_of_responsibility/main.go",
+            "program": "develop/dev10/task.go",
+            "args": ["-timeout=5s", "localhost", "1234"]
+            //"program": "patterns/chain_of_responsibility/main.go",
            // "args": ["-d ", ",","-f", "1,9,3", "-s", "files/test_file1.txt"]
         }
     ]
